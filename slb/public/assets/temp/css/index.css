@@ -1,0 +1,150 @@
+.flex-container {
+  display: flex;
+  align-items: center;
+  padding-right: 3px;
+}
+
+.flex-container i {
+  margin-right: 3px;
+  /* Espacement entre l'icône et le texte */
+}
+
+#dropdownMenuButton {
+  background-color: #4154f1;
+  color: white;
+}
+
+.search-bar {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar .form-inline {
+  display: flex;
+  align-items: center;
+  /* Assure que les éléments sont alignés verticalement */
+}
+
+.search-bar .form-control {
+  border-radius: 20px;
+  padding: 5px 20px;
+  border: 1px solid #4154f1;
+  transition: border-color 0.3s ease-in-out;
+  width: 250px;
+  /* Ajustez la largeur selon vos besoins */
+}
+
+.search-bar .form-control:focus {
+  border-color: #4154f1;
+  box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+}
+
+.search-bar .btn {
+  border-radius: 40%;
+  padding: 5px 20px;
+  margin-left: 3px;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.search-bar .btn-outline-success {
+  border-color: #4154f1;
+  color: #4154f1;
+}
+
+.search-bar .btn-outline-success:hover {
+  background-color: #4154f1;
+  color: white;
+}
+
+.btn-primary {
+  background-color: #4154f1;
+  color: white;
+}
+
+#icon1 {
+  font-size: 20px;
+  color: #012970;
+  margin-right: 5px;
+}
+
+/* Assurez-vous que votre fichier CSS est inclus dans la page HTML */
+
+/* Style pour le menu principal */
+
+
+
+/* Style pour le menu déroulant */
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 9px;
+  max-height: 400px;
+  /* Limite la hauteur du menu */
+  overflow-y: auto;
+  /* Ajoute une barre de défilement si le contenu dépasse la hauteur */
+}
+
+.dropdown-menu li {
+  padding: 5px;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li :hover {
+  color: white;
+}
+
+/* Style pour les messages d'erreurs*/
+.custom-alert {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.5s ease-in-out;
+}
+
+.custom-alert i {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.etat-enstock {
+  color: hsl(120, 88%, 35%);
+}
+
+.etat-rupture {
+  color: red;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #4154f1;
+  border: 2px solid #4154f1;
+}
+
+.form-paiement {
+  background-color: white;
+  padding: 10px;
+  border: 2px solid #4154f1;
+}
+
+.action {
+  width: 120px;
+}
+
+.form-gest {
+  background: url(../img/hero-bg.png) top center no-repeat;
+}
