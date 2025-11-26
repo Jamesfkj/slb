@@ -1,8 +1,12 @@
 # Stage 1: Composer - Installer les dépendances PHP
 FROM composer:2 AS composer_build
 WORKDIR /app
+
+# Copier les fichiers composer
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Ignorer les requirements de plateforme pour le build
+RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
 
 # Stage 2: PHP avec Apache - Image finale
 FROM php:8.2-apache
@@ -37,26 +41,19 @@ RUN docker-php-ext-configure intl \
 # Activer mod_rewrite pour Laravel
 RUN a2enmod rewrite
 
-# Copier TOUT le projet d'abord (y compris artisan)
-COPY . .
+# Copier TOUT le projet
+COPY --chown=www-data:www-data . .
 
-# Copier les vendor depuis composer_build (écrase le vendor local)
+# Copier les vendor depuis composer_build
 COPY --from=composer_build /app/vendor ./vendor
 
-# Vérifier que artisan existe
-RUN ls -la /var/www/html/artisan || echo "ERREUR: artisan introuvable!"
-
-# Créer les dossiers Laravel s'ils n'existent pas et configurer les permissions
+# Créer les dossiers Laravel et configurer les permissions
 RUN mkdir -p storage/framework/cache/data \
     storage/framework/sessions \
     storage/framework/views \
     storage/logs \
     bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-
-# S'assurer que artisan est exécutable
-RUN chmod +x artisan
 
 # Configuration Apache pour Laravel
 RUN echo '<VirtualHost *:80>\n\
@@ -74,36 +71,20 @@ RUN echo '<VirtualHost *:80>\n\
 # Script de démarrage
 RUN echo '#!/bin/bash\n\
 set -e\n\
+cd /var/www/html\n\
 \n\
-# Vérifier que artisan existe\n\
-if [ ! -f /var/www/html/artisan ]; then\n\
-    echo "ERREUR: Fichier artisan introuvable!"\n\
-    ls -la /var/www/html/\n\
-    exit 1\n\
-fi\n\
-\n\
-# Attendre MySQL\n\
 if [ ! -z "$MYSQLHOST" ]; then\n\
     echo "Waiting for MySQL..."\n\
     until mysqladmin ping -h"$MYSQLHOST" -P"$MYSQLPORT" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" --silent 2>/dev/null; do\n\
-        echo "MySQL is unavailable - sleeping"\n\
         sleep 2\n\
     done\n\
-    echo "MySQL is up!"\n\
+    echo "MySQL is ready!"\n\
 fi\n\
 \n\
-# Générer la clé Laravel\n\
 php artisan key:generate --force --no-interaction || true\n\
-\n\
-# Exécuter les migrations\n\
 php artisan migrate --force --no-interaction || true\n\
-\n\
-# Optimisations Laravel\n\
 php artisan config:cache || true\n\
-php artisan route:cache || true\n\
-php artisan view:cache || true\n\
 \n\
-# Démarrer Apache\n\
 apache2-foreground' > /usr/local/bin/start.sh \
     && chmod +x /usr/local/bin/start.sh
 
