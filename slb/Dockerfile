@@ -37,11 +37,14 @@ RUN docker-php-ext-configure intl \
 # Activer mod_rewrite pour Laravel
 RUN a2enmod rewrite
 
-# Copier les vendor depuis composer_build
+# Copier TOUT le projet d'abord (y compris artisan)
+COPY . .
+
+# Copier les vendor depuis composer_build (écrase le vendor local)
 COPY --from=composer_build /app/vendor ./vendor
 
-# Copier tout le projet
-COPY . .
+# Vérifier que artisan existe
+RUN ls -la /var/www/html/artisan || echo "ERREUR: artisan introuvable!"
 
 # Créer les dossiers Laravel s'ils n'existent pas et configurer les permissions
 RUN mkdir -p storage/framework/cache/data \
@@ -51,6 +54,9 @@ RUN mkdir -p storage/framework/cache/data \
     bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
+
+# S'assurer que artisan est exécutable
+RUN chmod +x artisan
 
 # Configuration Apache pour Laravel
 RUN echo '<VirtualHost *:80>\n\
@@ -69,6 +75,13 @@ RUN echo '<VirtualHost *:80>\n\
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
+# Vérifier que artisan existe\n\
+if [ ! -f /var/www/html/artisan ]; then\n\
+    echo "ERREUR: Fichier artisan introuvable!"\n\
+    ls -la /var/www/html/\n\
+    exit 1\n\
+fi\n\
+\n\
 # Attendre MySQL\n\
 if [ ! -z "$MYSQLHOST" ]; then\n\
     echo "Waiting for MySQL..."\n\
@@ -83,12 +96,12 @@ fi\n\
 php artisan key:generate --force --no-interaction || true\n\
 \n\
 # Exécuter les migrations\n\
-php artisan migrate --force --no-interaction\n\
+php artisan migrate --force --no-interaction || true\n\
 \n\
 # Optimisations Laravel\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
+php artisan config:cache || true\n\
+php artisan route:cache || true\n\
+php artisan view:cache || true\n\
 \n\
 # Démarrer Apache\n\
 apache2-foreground' > /usr/local/bin/start.sh \
