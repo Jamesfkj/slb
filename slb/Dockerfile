@@ -1,18 +1,10 @@
-# Stage 1: Node - Build des assets (Bootstrap, etc.)
-FROM node:22-alpine AS node_build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-# Stage 2: Composer - Installer les dépendances PHP
+# Stage 1: Composer - Installer les dépendances PHP
 FROM composer:2 AS composer_build
 WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Stage 3: PHP avec Apache - Image finale
+# Stage 2: PHP avec Apache - Image finale
 FROM php:8.2-apache
 WORKDIR /var/www/html
 
@@ -24,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    intl \
     zip \
     unzip \
     default-mysql-client \
@@ -35,6 +26,7 @@ RUN docker-php-ext-install \
     pdo_mysql \
     mbstring \
     exif \
+    intl \
     pcntl \
     bcmath \
     gd \
@@ -45,9 +37,6 @@ RUN a2enmod rewrite
 
 # Copier les vendor depuis composer_build
 COPY --from=composer_build /app/vendor ./vendor
-
-# Copier les assets buildés depuis node_build
-COPY --from=node_build /app/public/build ./public/build
 
 # Copier tout le projet
 COPY . .
