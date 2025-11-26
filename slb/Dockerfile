@@ -8,7 +8,7 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 FROM php:8.2-apache
 WORKDIR /var/www/html
 
-# Installer les dépendances système (ajout de libicu-dev pour intl)
+# Installer les dépendances système
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -43,10 +43,14 @@ COPY --from=composer_build /app/vendor ./vendor
 # Copier tout le projet
 COPY . .
 
-# Configurer les permissions Laravel
-RUN chown -R www-data:www-data \
-    /var/www/html/storage \
-    /var/www/html/bootstrap/cache
+# Créer les dossiers Laravel s'ils n'existent pas et configurer les permissions
+RUN mkdir -p storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # Configuration Apache pour Laravel
 RUN echo '<VirtualHost *:80>\n\
