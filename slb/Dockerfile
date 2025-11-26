@@ -8,7 +8,7 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 FROM php:8.2-apache
 WORKDIR /var/www/html
 
-# Installer les dépendances système
+# Installer les dépendances système (ajout de libicu-dev pour intl)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -16,13 +16,15 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libicu-dev \
     zip \
     unzip \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Installer les extensions PHP nécessaires pour Laravel
-RUN docker-php-ext-install \
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install \
     pdo_mysql \
     mbstring \
     exif \
